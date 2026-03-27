@@ -168,9 +168,15 @@ def process_url(url: str, output_base: Path) -> Path:
     print(f"  ✓ HTML: redesign.html ({len(html)} chars)")
 
     # Step 3: Screenshot the redesign
-    print("\n[3/3] Taking screenshot of redesign...")
+    print("\n[3/4] Taking screenshot of redesign...")
     screenshot_html(html_path, output_dir / "redesign.png")
     print(f"  ✓ Screenshot: redesign.png")
+
+    # Step 4: Generate comparison page
+    print("\n[4/4] Generating comparison page...")
+    from compare import generate_comparison
+    comparison_path = generate_comparison(output_dir)
+    print(f"  ✓ Comparison: {comparison_path.name}")
 
     print(f"\n  Done! Files in {output_dir}/")
     return output_dir
