@@ -22,7 +22,7 @@ def audit_site(url: str) -> dict:
             browser.close()
             return {"url": url, "error": str(e), "score": 0}
 
-        result = page.evaluate("""() => {
+        result = page.evaluate(r"""() => {
             const signals = {};
 
             // Mobile viewport meta
