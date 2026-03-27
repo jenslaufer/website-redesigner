@@ -1,14 +1,17 @@
 # Website Redesigner
 
-Scrape any website → generate stunning Tailwind redesign → screenshot comparison.
+Scrape any website, generate stunning Tailwind redesign, create comparison page, send cold outreach.
 
-Cold outreach tool: show potential clients what their site *could* look like.
+Full pipeline: prospect → redesign → compare → outreach.
 
-## How it works
+## Pipeline
 
-1. **Scrape** — Playwright captures content + screenshot of original site
-2. **Redesign** — Claude generates a modern HTML + Tailwind CSS version
-3. **Screenshot** — Takes screenshot of the redesign for before/after comparison
+| Step | Script | Input | Output |
+|------|--------|-------|--------|
+| 1. Prospect | `prospect.py` | URLs | Redesign scores + reasons |
+| 2. Redesign | `redesign.py` | URL | original.png, redesign.html, redesign.png |
+| 3. Compare | `compare.py` | output dir | comparison.html (slider + side-by-side) |
+| 4. Outreach | `outreach.py` | output dir + contact | email, LinkedIn, follow-up templates |
 
 ## Setup
 
@@ -21,19 +24,53 @@ export ANTHROPIC_API_KEY=sk-ant-...
 
 ## Usage
 
-Single site:
+### Find targets
+
+```bash
+python3 prospect.py synabi.com handwerker-schmidt.de steuerberater-meyer.de
+```
+
+Output: scored list sorted by redesign potential (higher = more outdated).
+
+### Redesign
+
 ```bash
 python3 redesign.py https://example.com
+python3 redesign.py https://site1.com https://site2.com  # bulk
 ```
 
-Bulk (multiple URLs):
+### Generate comparison page
+
 ```bash
-python3 redesign.py https://site1.com https://site2.com https://site3.com
+python3 compare.py output/example_com/
 ```
 
-Custom output directory:
+Opens interactive before/after slider in browser. Self-contained HTML — works as email attachment.
+
+### Generate outreach
+
 ```bash
-python3 redesign.py -o ./clients https://their-site.com
+python3 outreach.py output/example_com/ --company "Example GmbH" --contact "Max Mustermann"
+```
+
+Creates `outreach/email.txt`, `outreach/linkedin.txt`, `outreach/followup.txt`.
+
+### Full pipeline example
+
+```bash
+# 1. Score targets
+python3 prospect.py local-bakery.de old-restaurant.de outdated-shop.de
+
+# 2. Redesign the best candidate
+python3 redesign.py https://old-restaurant.de
+
+# 3. Generate comparison
+python3 compare.py output/old-restaurant_de/
+
+# 4. Generate outreach
+python3 outreach.py output/old-restaurant_de/ --company "Restaurant Alt" --contact "Hans Müller"
+
+# 5. Send email with comparison.html attached
 ```
 
 ## Output
@@ -41,11 +78,20 @@ python3 redesign.py -o ./clients https://their-site.com
 ```
 output/
   example_com/
-    original.png      # Screenshot of current site
-    redesign.html     # Generated redesign (open in browser)
-    redesign.png      # Screenshot of redesign
-    content.json      # Extracted content (for reference)
+    original.png        # Screenshot of current site
+    redesign.html       # Generated redesign
+    redesign.png        # Screenshot of redesign
+    comparison.html     # Interactive before/after
+    content.json        # Extracted content
+    outreach/
+      email.txt         # Cold email template
+      linkedin.txt      # LinkedIn DM template
+      followup.txt      # Follow-up email
 ```
+
+## REST API
+
+PR #3 adds FastAPI endpoints for async redesign jobs. See `tests/` for API documentation.
 
 ## Requirements
 
