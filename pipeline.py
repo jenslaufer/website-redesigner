@@ -28,6 +28,7 @@ def run_pipeline(
     """Run the full pipeline for a niche query."""
 
     has_api_key = bool(os.environ.get("ANTHROPIC_API_KEY"))
+    mode = "Claude API" if has_api_key else "template"
 
     # Step 1: Discover prospects
     print(f"\n{'='*60}")
@@ -82,29 +83,27 @@ def run_pipeline(
             "redesigned": False,
         }
 
-        # Step 3: Redesign (requires API key)
-        if has_api_key:
-            print(f"\n[3/5] Redesigning {domain}...")
-            try:
-                from redesign import process_url
-                process_url(url, output_base)
-                result["redesigned"] = True
+        # Step 3: Redesign (API or template fallback)
+        print(f"\n[3/5] Redesigning {domain} ({mode})...")
+        try:
+            from redesign import process_url
+            process_url(url, output_base)
+            result["redesigned"] = True
+            result["mode"] = mode
 
-                # Step 4: Comparison (only if redesign succeeded)
-                if (output_dir / "original.png").exists() and (output_dir / "redesign.png").exists():
-                    print(f"[4/5] Generating comparison for {domain}...")
-                    generate_comparison(output_dir)
+            # Step 4: Comparison (only if redesign succeeded)
+            if (output_dir / "original.png").exists() and (output_dir / "redesign.png").exists():
+                print(f"[4/5] Generating comparison for {domain}...")
+                generate_comparison(output_dir)
 
-                # Step 5: Outreach
-                if (output_dir / "content.json").exists():
-                    company = prospect.get("search_title", domain).split(" - ")[0].split(" | ")[0]
-                    print(f"[5/5] Generating outreach for {domain}...")
-                    generate_outreach(output_dir, company=company, contact="")
+            # Step 5: Outreach
+            if (output_dir / "content.json").exists():
+                company = prospect.get("search_title", domain).split(" - ")[0].split(" | ")[0]
+                print(f"[5/5] Generating outreach for {domain}...")
+                generate_outreach(output_dir, company=company, contact="")
 
-            except Exception as e:
-                print(f"  Error: {e}")
-        else:
-            print(f"  [3-5] Skipping redesign/compare/outreach (no ANTHROPIC_API_KEY)")
+        except Exception as e:
+            print(f"  Error: {e}")
 
         processed.append(result)
 
@@ -152,11 +151,8 @@ def run_pipeline(
     print(f"  Found:      {len(prospects)} sites")
     print(f"  Qualified:  {len(qualified)} (score >= {min_score})")
     print(f"  Processed:  {len(processed)}")
-    if has_api_key:
-        redesigned = sum(1 for r in processed if r["redesigned"])
-        print(f"  Redesigned: {redesigned}")
-    else:
-        print(f"  Redesigned: 0 (set ANTHROPIC_API_KEY to enable)")
+    redesigned = sum(1 for r in processed if r["redesigned"])
+    print(f"  Redesigned: {redesigned} ({mode})")
     print(f"\n  Report:        {report_path}")
     print(f"  Prospects CSV: {csv_path}")
     print(f"  Summary JSON:  {summary_path}")

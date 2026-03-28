@@ -16,13 +16,20 @@ Scrape any website, generate stunning Tailwind redesign, create comparison page,
 | 4. Outreach | `outreach.py` | output dir + contact | email, LinkedIn, follow-up templates |
 | 5. Report | `report.py` | pipeline JSON | HTML dashboard with all prospects |
 
+## Redesign Modes
+
+- **Claude API** (with `ANTHROPIC_API_KEY`): AI-generated, unique per site. Best quality.
+- **Template** (no API key): Professional Tailwind templates filled with scraped content. Auto-detects business type (restaurant, medical, legal, craft, beauty) and applies matching color scheme. Good enough for demos and cold outreach.
+
+The pipeline automatically falls back to template mode when no API key is set.
+
 ## Setup
 
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 playwright install chromium
-export ANTHROPIC_API_KEY=sk-ant-...
+export ANTHROPIC_API_KEY=sk-ant-...  # optional — template mode works without
 ```
 
 ## Usage

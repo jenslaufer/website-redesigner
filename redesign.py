@@ -7,7 +7,8 @@ import sys
 import time
 from pathlib import Path
 
-import anthropic
+import os
+
 from playwright.sync_api import sync_playwright
 
 
@@ -86,7 +87,12 @@ def scrape_site(url: str, output_dir: Path) -> dict:
 
 
 def generate_redesign(content: dict, url: str) -> str:
-    """Use Claude to generate a redesigned HTML page."""
+    """Generate a redesigned HTML page. Uses Claude API if available, template fallback otherwise."""
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        from template_redesign import generate_template_redesign
+        return generate_template_redesign(content)
+
+    import anthropic
     client = anthropic.Anthropic()
 
     site_summary = json.dumps(content, indent=2, ensure_ascii=False)
