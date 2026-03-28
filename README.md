@@ -14,6 +14,7 @@ Scrape any website, generate stunning Tailwind redesign, create comparison page,
 | 2. Redesign | `redesign.py` | URL | original.png, redesign.html, redesign.png |
 | 3. Compare | `compare.py` | output dir | comparison.html (slider + side-by-side) |
 | 4. Outreach | `outreach.py` | output dir + contact | email, LinkedIn, follow-up templates |
+| 5. Report | `report.py` | pipeline JSON | HTML dashboard with all prospects |
 
 ## Setup
 
@@ -74,7 +75,7 @@ python3 pipeline.py "Steuerberater Frankfurt" --max 15 --top 5
 python3 pipeline.py "Handwerker München" --min-score 4 --top 3
 ```
 
-Runs discover → prospect → redesign → compare → outreach for top N prospects. Exports CSV + JSON summary. Gracefully skips redesign if no `ANTHROPIC_API_KEY`.
+Runs discover → prospect → redesign → compare → outreach for top N prospects. Generates HTML report + CSV + JSON. Gracefully skips redesign if no `ANTHROPIC_API_KEY`.
 
 ### Manual step-by-step
 
@@ -90,12 +91,16 @@ python3 outreach.py output/old-restaurant_de/ --company "Restaurant Alt" --conta
 
 ```
 output/
+  report_steuerberater_frankfurt.html  # Visual prospect dashboard
+  prospects_steuerberater_frankfurt.csv
+  pipeline_steuerberater_frankfurt.json
   example_com/
     original.png        # Screenshot of current site
     redesign.html       # Generated redesign
     redesign.png        # Screenshot of redesign
     comparison.html     # Interactive before/after
     content.json        # Extracted content
+    prospect.json       # Audit data
     outreach/
       email.txt         # Cold email template
       linkedin.txt      # LinkedIn DM template

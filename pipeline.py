@@ -15,6 +15,7 @@ from pathlib import Path
 from discover import discover
 from compare import generate_comparison
 from outreach import generate_outreach
+from report import generate_report
 
 
 def run_pipeline(
@@ -115,9 +116,15 @@ def run_pipeline(
         "processed": len(processed),
         "has_api_key": has_api_key,
         "results": processed,
+        "all_prospects": qualified,
     }
     summary_path = output_base / f"pipeline_{safe_name_from_query(query)}.json"
     summary_path.write_text(json.dumps(summary, indent=2, ensure_ascii=False))
+
+    # Generate HTML report
+    print(f"\n[Report] Generating prospect report...")
+    report_path = generate_report(summary, output_base)
+    print(f"  Report: {report_path}")
 
     # Export all qualified prospects as CSV
     csv_path = output_base / f"prospects_{safe_name_from_query(query)}.csv"
@@ -150,7 +157,8 @@ def run_pipeline(
         print(f"  Redesigned: {redesigned}")
     else:
         print(f"  Redesigned: 0 (set ANTHROPIC_API_KEY to enable)")
-    print(f"\n  Prospects CSV: {csv_path}")
+    print(f"\n  Report:        {report_path}")
+    print(f"  Prospects CSV: {csv_path}")
     print(f"  Summary JSON:  {summary_path}")
     for r in processed:
         print(f"  Output:        {r['output_dir']}/")
