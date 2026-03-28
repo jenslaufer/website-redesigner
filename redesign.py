@@ -71,13 +71,28 @@ def scrape_site(url: str, output_dir: Path) -> dict:
             };
         }""")
 
-        # Get computed styles for color palette
+        # Get computed styles for color palette (brand-aware extraction)
         colors = page.evaluate("""() => {
-            const styles = getComputedStyle(document.body);
+            const gs = (el) => el ? getComputedStyle(el) : null;
+            const body = gs(document.body);
+            const h1 = gs(document.querySelector('h1'));
+            const h2 = gs(document.querySelector('h2'));
+            const link = gs(document.querySelector('a[href]'));
+            const nav = gs(document.querySelector('nav'));
+            const btn = gs(document.querySelector('button, .btn, [class*="button"], a[class*="btn"]'));
+            const header = gs(document.querySelector('header'));
+
             return {
-                bgColor: styles.backgroundColor,
-                textColor: styles.color,
-                fontFamily: styles.fontFamily
+                bgColor: body?.backgroundColor || '',
+                textColor: body?.color || '',
+                fontFamily: body?.fontFamily || '',
+                headingColor: h1?.color || h2?.color || '',
+                headingFont: h1?.fontFamily || '',
+                linkColor: link?.color || '',
+                navBgColor: nav?.backgroundColor || header?.backgroundColor || '',
+                navTextColor: nav?.color || '',
+                btnBgColor: btn?.backgroundColor || '',
+                btnTextColor: btn?.color || '',
             };
         }""")
 
