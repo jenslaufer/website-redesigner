@@ -14,6 +14,7 @@ from pathlib import Path
 
 from discover import discover
 from compare import generate_comparison
+from compare_image import generate_compare_image
 from outreach import generate_outreach
 from report import generate_report
 
@@ -95,6 +96,7 @@ def run_pipeline(
             if (output_dir / "original.png").exists() and (output_dir / "redesign.png").exists():
                 print(f"[4/5] Generating comparison for {domain}...")
                 generate_comparison(output_dir)
+                generate_compare_image(output_dir)
 
             # Step 5: Outreach
             if (output_dir / "content.json").exists():

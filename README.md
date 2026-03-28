@@ -62,10 +62,12 @@ python3 redesign.py https://site1.com https://site2.com  # bulk
 ### Generate comparison page
 
 ```bash
-python3 compare.py output/example_com/
+python3 compare.py output/example_com/        # Interactive HTML (email attachment)
+python3 compare_image.py output/example_com/   # Single PNG (WhatsApp, LinkedIn, Telegram)
 ```
 
-Opens interactive before/after slider in browser. Self-contained HTML — works as email attachment.
+HTML version: interactive slider, self-contained, works as email attachment.
+PNG version: shareable image with VORHER/NACHHER labels + branding — send via messaging apps.
 
 ### Generate outreach
 
@@ -106,6 +108,7 @@ output/
     redesign.html       # Generated redesign
     redesign.png        # Screenshot of redesign
     comparison.html     # Interactive before/after
+    comparison.png      # Shareable side-by-side image
     content.json        # Extracted content
     prospect.json       # Audit data
     outreach/
