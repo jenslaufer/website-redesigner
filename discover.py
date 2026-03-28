@@ -27,6 +27,13 @@ SKIP_DOMAINS = {
     "suchehandwerker.de", "trustlocal.de", "goyellow.de",
     "cylex.de", "hotfrog.de", "stadtbranchenbuch.com",
     "unternehmensverzeichnis.org", "firmenwissen.de",
+    "treatwell.de", "treatwell.com", "werkenntdenbesten.de",
+    "stilpunkte.de", "mitvergnuegen.com", "tripadvisor.de",
+    "tripadvisor.com", "booking.com", "lieferando.de",
+    "jameda.de", "doctolib.de", "sanego.de", "arzt-auskunft.de",
+    "anwalt.de", "anwalt24.de", "frag-einen-anwalt.de",
+    "steuerberater.de", "steuerberater-suchservice.de",
+    "openstreetmap.org", "reddit.com",
 }
 
 

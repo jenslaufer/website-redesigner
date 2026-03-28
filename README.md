@@ -2,12 +2,13 @@
 
 Scrape any website, generate stunning Tailwind redesign, create comparison page, send cold outreach.
 
-Full pipeline: discover → prospect → redesign → compare → outreach.
+Scrape any website, generate stunning Tailwind redesign, create comparison page, send cold outreach. One command processes an entire niche.
 
 ## Pipeline
 
 | Step | Script | Input | Output |
 |------|--------|-------|--------|
+| **All** | `pipeline.py` | niche + location | Everything below, one command |
 | 0. Discover | `discover.py` | niche + location | Scored prospects with contact info |
 | 1. Prospect | `prospect.py` | URLs | Redesign scores + reasons |
 | 2. Redesign | `redesign.py` | URL | original.png, redesign.html, redesign.png |
@@ -66,25 +67,23 @@ python3 outreach.py output/example_com/ --company "Example GmbH" --contact "Max 
 
 Creates `outreach/email.txt`, `outreach/linkedin.txt`, `outreach/followup.txt`.
 
-### Full pipeline example
+### Full pipeline (one command)
 
 ```bash
-# 0. Find prospects in a niche
+python3 pipeline.py "Steuerberater Frankfurt" --max 15 --top 5
+python3 pipeline.py "Handwerker München" --min-score 4 --top 3
+```
+
+Runs discover → prospect → redesign → compare → outreach for top N prospects. Exports CSV + JSON summary. Gracefully skips redesign if no `ANTHROPIC_API_KEY`.
+
+### Manual step-by-step
+
+```bash
 python3 discover.py "Restaurant Aschaffenburg" --max 15 --csv prospects.csv
-
-# 1. Score specific targets
 python3 prospect.py local-bakery.de old-restaurant.de
-
-# 2. Redesign the best candidate
 python3 redesign.py https://old-restaurant.de
-
-# 3. Generate comparison
 python3 compare.py output/old-restaurant_de/
-
-# 4. Generate outreach
 python3 outreach.py output/old-restaurant_de/ --company "Restaurant Alt" --contact "Hans Müller"
-
-# 5. Send email with comparison.html attached
 ```
 
 ## Output
