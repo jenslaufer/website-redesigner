@@ -2,12 +2,13 @@
 
 Scrape any website, generate stunning Tailwind redesign, create comparison page, send cold outreach.
 
-Full pipeline: prospect → redesign → compare → outreach.
+Full pipeline: discover → prospect → redesign → compare → outreach.
 
 ## Pipeline
 
 | Step | Script | Input | Output |
 |------|--------|-------|--------|
+| 0. Discover | `discover.py` | niche + location | Scored prospects with contact info |
 | 1. Prospect | `prospect.py` | URLs | Redesign scores + reasons |
 | 2. Redesign | `redesign.py` | URL | original.png, redesign.html, redesign.png |
 | 3. Compare | `compare.py` | output dir | comparison.html (slider + side-by-side) |
@@ -24,7 +25,17 @@ export ANTHROPIC_API_KEY=sk-ant-...
 
 ## Usage
 
-### Find targets
+### Discover prospects by niche
+
+```bash
+python3 discover.py "Steuerberater Frankfurt" --max 15
+python3 discover.py "Handwerker München" --csv prospects.csv
+python3 discover.py "Restaurant Aschaffenburg" --min-score 4 --json
+```
+
+Searches DuckDuckGo, filters directories, audits each site, extracts contact info. Output: scored list with email/phone.
+
+### Score known URLs
 
 ```bash
 python3 prospect.py synabi.com handwerker-schmidt.de steuerberater-meyer.de
@@ -58,8 +69,11 @@ Creates `outreach/email.txt`, `outreach/linkedin.txt`, `outreach/followup.txt`.
 ### Full pipeline example
 
 ```bash
-# 1. Score targets
-python3 prospect.py local-bakery.de old-restaurant.de outdated-shop.de
+# 0. Find prospects in a niche
+python3 discover.py "Restaurant Aschaffenburg" --max 15 --csv prospects.csv
+
+# 1. Score specific targets
+python3 prospect.py local-bakery.de old-restaurant.de
 
 # 2. Redesign the best candidate
 python3 redesign.py https://old-restaurant.de
