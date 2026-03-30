@@ -108,10 +108,14 @@ def generate_redesign(content: dict, url: str, output_dir: Path = None) -> str:
     """
     import shutil
     import subprocess
+    from sanitize import sanitize_font_name, validate_url, sanitize_for_prompt, validate_output_path
 
     if not shutil.which("claude"):
         from template_redesign import generate_template_redesign
         return generate_template_redesign(content)
+
+    # Validate URL
+    url = validate_url(url)
 
     # Write content.json for the subagent to read
     if output_dir:
@@ -119,14 +123,18 @@ def generate_redesign(content: dict, url: str, output_dir: Path = None) -> str:
         content_path.write_text(json.dumps(content, indent=2, ensure_ascii=False))
 
     colors = content.get("colors", {})
-    heading_font = colors.get("headingFont", "").split(",")[0].strip().strip("'\"")
+    raw_font = colors.get("headingFont", "").split(",")[0].strip()
+    heading_font = sanitize_font_name(raw_font)
+
+    content_file = str(output_dir / "content.json") if output_dir else "provided inline"
+    output_file = str(output_dir / "redesign.html") if output_dir else "redesign.html"
 
     prompt = f"""Redesign this website as a single self-contained HTML file with Tailwind CSS.
 
-SOURCE URL: {url}
-ORIGINAL BRAND FONT: {heading_font or 'not detected — choose a distinctive one'}
-CONTENT FILE: {output_dir / 'content.json' if output_dir else 'provided inline'}
-OUTPUT FILE: {output_dir / 'redesign.html' if output_dir else 'redesign.html'}
+SOURCE URL: {sanitize_for_prompt(url)}
+ORIGINAL BRAND FONT: {sanitize_for_prompt(heading_font or 'not detected — choose a distinctive one')}
+CONTENT FILE: {content_file}
+OUTPUT FILE: {output_file}
 
 Read the content file for the full extracted site content (text, navigation, colors, structure).
 
@@ -139,13 +147,17 @@ Requirements:
 - Footer with original company info
 - Write the final HTML to the output file path above"""
 
+    # Pass prompt via stdin to avoid shell injection via -p CLI arg
     result = subprocess.run(
-        ["claude", "--agent", "webdesign-actor", "-p", prompt, "--output-format", "text"],
-        capture_output=True, text=True, timeout=300, cwd=str(output_dir) if output_dir else None
+        ["claude", "--agent", "webdesign-actor", "--output-format", "text"],
+        input=prompt, capture_output=True, text=True, timeout=300,
+        cwd=str(output_dir) if output_dir else None,
     )
 
-    # Read the generated file
+    # Read the generated file — verify path is inside output_dir
     html_path = output_dir / "redesign.html" if output_dir else Path("redesign.html")
+    if output_dir:
+        validate_output_path(html_path, output_dir)
     if html_path.exists():
         return html_path.read_text()
 
