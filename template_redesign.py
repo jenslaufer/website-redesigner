@@ -23,10 +23,10 @@ BUSINESS_KEYWORDS = {
 COLOR_SCHEMES = {
     "restaurant": {"primary": "amber", "accent": "rose", "bg": "stone"},
     "medical": {"primary": "sky", "accent": "emerald", "bg": "slate"},
-    "legal": {"primary": "indigo", "accent": "amber", "bg": "gray"},
+    "legal": {"primary": "slate", "accent": "amber", "bg": "gray"},
     "craft": {"primary": "orange", "accent": "sky", "bg": "stone"},
     "beauty": {"primary": "pink", "accent": "violet", "bg": "rose"},
-    "default": {"primary": "indigo", "accent": "emerald", "bg": "gray"},
+    "default": {"primary": "teal", "accent": "amber", "bg": "gray"},
 }
 
 # Tailwind color palette reference values (500 shade) for matching
@@ -211,8 +211,8 @@ def extract_services(content: dict) -> list[str]:
 
 
 def _font_imports(brand_font: str) -> str:
-    """Generate Google Fonts link for the brand font, with Inter as fallback."""
-    fonts = ["Inter:wght@300;400;500;600;700;800"]
+    """Generate Google Fonts link for the brand font, with DM Sans as fallback."""
+    fonts = ["DM+Sans:wght@300;400;500;600;700;800"]
     if brand_font:
         # Extract the first quoted font name
         m = re.match(r'"([^"]+)"', brand_font)
@@ -229,8 +229,8 @@ def _font_css(brand_font: str) -> str:
         m = re.match(r'"([^"]+)"', brand_font)
         name = m.group(1) if m else brand_font.split(",")[0].strip().strip("'\"")
         if name and name.lower() not in ("sans-serif", "serif", "monospace", "system-ui"):
-            return f"'{name}', 'Inter', sans-serif"
-    return "'Inter', sans-serif"
+            return f"'{name}', 'DM Sans', sans-serif"
+    return "'DM Sans', sans-serif"
 
 
 def generate_template_redesign(content: dict) -> str:

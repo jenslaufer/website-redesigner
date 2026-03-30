@@ -101,48 +101,63 @@ def scrape_site(url: str, output_dir: Path) -> dict:
     return {**content, "colors": colors}
 
 
-def generate_redesign(content: dict, url: str) -> str:
-    """Generate a redesigned HTML page. Uses Claude API if available, template fallback otherwise."""
-    if not os.environ.get("ANTHROPIC_API_KEY"):
+def generate_redesign(content: dict, url: str, output_dir: Path = None) -> str:
+    """Generate a redesigned HTML page using the webdesign-actor subagent via Claude Code.
+
+    Falls back to template if Claude Code is not available.
+    """
+    import shutil
+    import subprocess
+
+    if not shutil.which("claude"):
         from template_redesign import generate_template_redesign
         return generate_template_redesign(content)
 
-    import anthropic
-    client = anthropic.Anthropic()
+    # Write content.json for the subagent to read
+    if output_dir:
+        content_path = output_dir / "content.json"
+        content_path.write_text(json.dumps(content, indent=2, ensure_ascii=False))
 
-    site_summary = json.dumps(content, indent=2, ensure_ascii=False)
+    colors = content.get("colors", {})
+    heading_font = colors.get("headingFont", "").split(",")[0].strip().strip("'\"")
 
-    response = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=8000,
-        messages=[{
-            "role": "user",
-            "content": f"""You are a world-class web designer. Redesign this website with stunning modern design.
+    prompt = f"""Redesign this website as a single self-contained HTML file with Tailwind CSS.
 
 SOURCE URL: {url}
+ORIGINAL BRAND FONT: {heading_font or 'not detected — choose a distinctive one'}
+CONTENT FILE: {output_dir / 'content.json' if output_dir else 'provided inline'}
+OUTPUT FILE: {output_dir / 'redesign.html' if output_dir else 'redesign.html'}
 
-EXTRACTED CONTENT:
-{site_summary}
+Read the content file for the full extracted site content (text, navigation, colors, structure).
 
-REQUIREMENTS:
-- Single self-contained HTML file
-- Use Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"></script>
-- Use Inter font from Google Fonts
-- Modern, clean, professional design — the kind that makes clients say "wow"
+Requirements:
+- Single self-contained HTML file using Tailwind CSS via CDN
 - Keep ALL original content (text, navigation, structure) — just make it beautiful
-- Hero section with gradient or striking visual
-- Smooth spacing, typography hierarchy, subtle shadows
+- Configure Tailwind with custom theme (fonts, colors) via inline config
+- Google Fonts for chosen typeface
 - Responsive (mobile-first)
-- Use placeholder images from picsum.photos if needed (relevant dimensions)
-- Add subtle hover effects on interactive elements
 - Footer with original company info
-- NO JavaScript frameworks, NO build tools — just HTML + Tailwind
+- Write the final HTML to the output file path above"""
 
-OUTPUT: Only the complete HTML file, nothing else. No markdown code fences."""
-        }]
+    result = subprocess.run(
+        ["claude", "--agent", "webdesign-actor", "-p", prompt, "--output-format", "text"],
+        capture_output=True, text=True, timeout=300, cwd=str(output_dir) if output_dir else None
     )
 
-    return response.content[0].text
+    # Read the generated file
+    html_path = output_dir / "redesign.html" if output_dir else Path("redesign.html")
+    if html_path.exists():
+        return html_path.read_text()
+
+    # If subagent didn't write the file, check stdout for HTML
+    output = result.stdout.strip()
+    if output.startswith("<!DOCTYPE") or output.startswith("<html"):
+        return output
+
+    # Fallback to template
+    print(f"  ⚠ Subagent did not produce HTML, falling back to template")
+    from template_redesign import generate_template_redesign
+    return generate_template_redesign(content)
 
 
 def screenshot_html(html_path: Path, output_path: Path):
@@ -182,10 +197,11 @@ def process_url(url: str, output_base: Path) -> Path:
     )
 
     # Step 2: Generate redesign
-    print("\n[2/3] Generating redesign with Claude...")
-    html = generate_redesign(content, url)
+    print("\n[2/3] Generating redesign with webdesign-actor...")
+    html = generate_redesign(content, url, output_dir)
     html_path = output_dir / "redesign.html"
-    html_path.write_text(html)
+    if not html_path.exists():
+        html_path.write_text(html)
     print(f"  ✓ HTML: redesign.html ({len(html)} chars)")
 
     # Step 3: Screenshot the redesign
