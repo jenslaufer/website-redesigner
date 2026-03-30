@@ -96,6 +96,42 @@ python3 compare.py output/old-restaurant_de/
 python3 outreach.py output/old-restaurant_de/ --company "Restaurant Alt" --contact "Hans Müller"
 ```
 
+## REST API
+
+Start the server:
+```bash
+uvicorn app:app --reload
+```
+
+### Endpoints
+
+**POST /redesign** — Submit a URL for redesign.
+```bash
+curl -X POST http://localhost:8000/redesign \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://example.com"}'
+# → {"job_id": "abc123", "status": "pending"}
+```
+
+**GET /redesign/{job_id}** — Check job status.
+```bash
+curl http://localhost:8000/redesign/abc123
+# → {"job_id": "abc123", "url": "...", "status": "done", "files": ["original.png", ...]}
+```
+
+**GET /redesign/{job_id}/{filename}** — Download output files.
+```bash
+curl -O http://localhost:8000/redesign/abc123/redesign.html
+```
+
+**GET /health** — Health check.
+
+### Testing
+
+```bash
+pytest tests/ -v
+```
+
 ## Output
 
 ```
