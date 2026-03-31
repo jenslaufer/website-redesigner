@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh pr:*)",
+      "Bash(git pull:*)",
+      "Bash(gh issue:*)",
+      "Skill(task-spec)",
+      "Bash(./install.sh)"
+    ]
+  }
+}
