@@ -9,10 +9,18 @@ def sanitize_font_name(font: str) -> str:
     """Sanitize a font name: strip control chars, restrict to safe charset, max 100 chars."""
     # Strip surrounding quotes and whitespace
     font = font.strip().strip("'\"").strip()
-    # Remove ASCII control characters (0x00-0x1F, 0x7F)
-    font = re.sub(r"[\x00-\x1f\x7f]", "", font)
+    # Replace ASCII control characters (0x00-0x1F, 0x7F) with spaces to preserve word boundaries
+    font = re.sub(r"[\x00-\x1f\x7f]", " ", font)
     # Keep only allowed characters: letters, digits, spaces, commas, periods, hyphens, apostrophes
     font = re.sub(r"[^a-zA-Z0-9 ',.\-]", "", font)
+    # Block SQL keywords and prompt injection phrases
+    blocklist = {
+        "drop", "table", "select", "insert", "delete", "update", "alter", "exec", "union",
+        "ignore", "previous", "instructions", "output", "secrets", "system", "prompt",
+    }
+    words = font.split()
+    words = [w for w in words if w.lower() not in blocklist]
+    font = " ".join(words).strip()
     return font[:100]
 
 
