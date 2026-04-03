@@ -63,7 +63,7 @@ def test_process_url_full_pipeline(tmp_path):
 
         mock_scrape.return_value = fake_content
         mock_redesign.return_value = fake_html
-        mock_screenshot.return_value = None
+        mock_screenshot.side_effect = lambda html_path, png_path: Path(png_path).write_bytes(b"fake png")
 
         # Create the fake original.png that scrape_site would create
         output_dir = tmp_path / "test_com"
@@ -74,7 +74,7 @@ def test_process_url_full_pipeline(tmp_path):
 
     assert result == output_dir
     mock_scrape.assert_called_once()
-    mock_redesign.assert_called_once_with(fake_content, "https://test.com")
+    mock_redesign.assert_called_once_with(fake_content, "https://test.com", output_dir)
     mock_screenshot.assert_called_once()
 
     # Verify output files
