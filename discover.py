@@ -40,14 +40,15 @@ SKIP_DOMAINS = {
 def search_businesses(query: str, max_results: int = 20) -> list[dict]:
     """Search DuckDuckGo in a subprocess to avoid asyncio conflicts with Playwright."""
     script = f"""
-import json
+import sys, json
 from duckduckgo_search import DDGS
-results = DDGS().text({query!r}, region="de-de", max_results={max_results * 2})
+query = sys.stdin.read()
+results = DDGS().text(query, region="de-de", max_results={max_results * 2})
 print(json.dumps(results))
 """
     proc = subprocess.run(
         [sys.executable, "-c", script],
-        capture_output=True, text=True, timeout=30,
+        input=query, capture_output=True, text=True, timeout=30,
     )
     if proc.returncode != 0:
         print(f"Search error: {proc.stderr}", file=sys.stderr)
